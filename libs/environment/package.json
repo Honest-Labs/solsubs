@@ -1,0 +1,20 @@
+{
+  "name": "@libs/environment",
+  "version": "0.1.0",
+  "description": "Environment & Secrets",
+  "author": "zach.ker.roberts@gmail.com",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "eslint ./",
+    "test": "echo \"No tests\"",
+    "test:unit": "echo \"No tests\"",
+    "test:integration": "echo \"No Integration Tests\""
+  },
+  "dependencies": {
+    "@google-cloud/logging": "^11.0.0",
+    "@google-cloud/secret-manager": "^5.0.1",
+    "mongodb": "^6.1.0"
+  }
+}

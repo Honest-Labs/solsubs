@@ -1,0 +1,16 @@
+{
+  "name": "@libs/data",
+  "version": "0.1.0",
+  "description": "Data",
+  "author": "zach.ker.roberts@gmail.com",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "eslint ./",
+    "test": "echo \"No tests\"",
+    "test:unit": "echo \"No tests\"",
+    "test:integration": "echo \"No Integration Tests\""
+  },
+  "dependencies": {}
+}
