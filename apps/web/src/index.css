@@ -5,3 +5,24 @@
 .wallet-adapter-button-trigger {
   background-color: #512da8;
 }
+
+.radial-gradient-custom-bg {
+  @apply bg-gradient-to-r;
+  background-image: radial-gradient(
+    circle farthest-side at 50% -96%,
+    #8b0000,
+    #ffdf00 0%,
+    #be0032 0%,
+    rgba(255, 255, 255, 0)
+  );
+}
+.radial-gradient-custom-fg {
+  @apply bg-gradient-to-r;
+  background-image: radial-gradient(
+    circle farthest-side at 50% 0,
+    #fcc200,
+    #ffdf00 0%,
+    #da9100 0%,
+    rgba(255, 255, 255, 0) 83%
+  );
+}

@@ -8,26 +8,26 @@ export default {
     themes: [
       {
         mytheme: {
-          primary: "#9bff9b",
+          primary: "#f2cf1f",
 
-          secondary: "#db6013",
+          secondary: "#62e3ef",
 
-          accent: "#f8ccff",
+          accent: "#fb923c",
 
-          neutral: "#2b2438",
+          neutral: "#1b191f",
 
-          "base-100": "#313235",
+          "base-100": "#000000",
 
-          info: "#43a6df",
+          info: "#5985de",
 
-          success: "#79e2d9",
+          success: "#81e4af",
 
-          warning: "#f49910",
+          warning: "#b5960d",
 
-          error: "#f0282c",
+          error: "#f05161",
         },
       },
     ],
   },
   plugins: [require("daisyui"), require("@tailwindcss/typography")],
-};
+}

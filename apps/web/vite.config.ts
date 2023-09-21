@@ -1,8 +1,8 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
-import nodePolyfills from "rollup-plugin-node-polyfills";
-import inject from "@rollup/plugin-inject";
+import { defineConfig } from "vite"
+import react from "@vitejs/plugin-react"
+import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill"
+import nodePolyfills from "rollup-plugin-node-polyfills"
+import inject from "@rollup/plugin-inject"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,6 +21,9 @@ export default defineConfig({
     "process.env": process.env ?? {},
     global: {},
   },
+  server: {
+    port: 8080,
+  },
   build: {
     target: "esnext",
     outDir: "build",
@@ -36,4 +39,4 @@ export default defineConfig({
       plugins: [NodeGlobalsPolyfillPlugin({ buffer: true })],
     },
   },
-});
+})
