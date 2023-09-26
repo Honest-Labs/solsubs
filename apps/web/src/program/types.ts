@@ -127,6 +127,11 @@ export type SubscriptionProgram = {
           isSigner: false;
         },
         {
+          name: "deployerTokenAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
           name: "payer";
           isMut: true;
           isSigner: true;
@@ -236,6 +241,11 @@ export type SubscriptionProgram = {
         },
         {
           name: "planOwnerTokenAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "deployerTokenAccount";
           isMut: true;
           isSigner: false;
         },
@@ -538,6 +548,11 @@ export const IDL: SubscriptionProgram = {
           isSigner: false,
         },
         {
+          name: "deployerTokenAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
           name: "payer",
           isMut: true,
           isSigner: true,
@@ -647,6 +662,11 @@ export const IDL: SubscriptionProgram = {
         },
         {
           name: "planOwnerTokenAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "deployerTokenAccount",
           isMut: true,
           isSigner: false,
         },
