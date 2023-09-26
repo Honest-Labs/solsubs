@@ -68,8 +68,34 @@ export const HomePage: FC<{}> = () => {
             </p>
           </div>
         </div>
+        <div className="absolute top-[60vh]">
+          <div>
+            Key Feature 1: Subheader: "Blockchain-Powered Subscription Control"{" "}
+            <br />
+            Description: "Exercise total control over your subscriptions. Modify
+            or terminate them directly from the blockchain—no middlemen, no
+            hassle." <br /> Material Icon Suggestion: "manage_accounts" or
+            "tune"
+          </div>
+          <div>
+            Key Feature 2: Subheader: "Unrivaled Transaction Transparency"
+            <br />
+            Description: "Say goodbye to hidden fees and unexplained charges.
+            Every transaction and activity is immutably and transparently
+            recorded on the blockchain."
+            <br /> Material Icon Suggestion: "visibility" or "assessment"
+          </div>
+          <div>
+            Key Feature 3: Subheader: "Ultimate Data Privacy" <br />{" "}
+            Description: "Rest assured, your subscription data is encrypted and
+            stored on the blockchain. It's your data, and only you have access
+            to it."
+            <br />
+            Material Icon Suggestion: "lock" or "verified_user"
+          </div>
+        </div>
       </div>
-      <footer className="py-4 px-8 relative">
+      <footer className="py-4 px-8 absolute bottom-0">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-gray-500 text-sm">
             &copy; 2023 SubChain. All rights reserved.
