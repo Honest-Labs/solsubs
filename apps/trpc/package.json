@@ -1,0 +1,27 @@
+{
+  "name": "@apps/trpc",
+  "version": "0.1.0",
+  "description": "TRPC",
+  "author": "zach.ker.roberts@gmail.com",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "nodemon src/index.ts",
+    "build": "npx esbuild src/index.ts --bundle --platform=node  --target=node20  --minify --sourcemap --outfile=dist/app.js",
+    "docker:deploy": "gcloud run deploy trpc --image us.gcr.io/${PROJECT_ID}/trpc:0.0.1 --quiet --update-env-vars PROJECT_ID=${PROJECT_ID} --region us-east4 --memory 1Gi --concurrency 20 --allow-unauthenticated",
+    "docker:build": "docker build --platform linux/amd64 -t us.gcr.io/${PROJECT_ID}/trpc:0.0.1 .",
+    "docker:push": "docker push us.gcr.io/${PROJECT_ID}/trpc:0.0.1",
+    "build:deploy": "yarn build && yarn docker:build && yarn docker:push && yarn docker:deploy"
+  },
+  "dependencies": {
+    "@trpc/server": "^10.38.4",
+    "@types/cors": "^2.8.14",
+    "bs58": "^5.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.10.1",
+    "tweetnacl": "^1.0.3",
+    "zod": "^3.22.2"
+  }
+}

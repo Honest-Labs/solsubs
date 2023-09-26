@@ -2,20 +2,23 @@ import { Logging } from "@google-cloud/logging";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import { EnrichedTransaction } from "helius-sdk";
 import express, { Router } from "express";
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import {
   AnchorProvider,
   BorshCoder,
   Program,
   Wallet,
 } from "@project-serum/anchor";
-import { SubscriptionProgram } from "./types";
-import { log } from "@libs/environment";
-import { Term, getPlanCol } from "@libs/data";
+import { getProgram, log } from "@libs/environment";
+import {
+  Term,
+  getPlanCol,
+  getSubscriptionCol,
+  getTransferCol,
+} from "@libs/data";
+import { SubscriptionProgram, programId } from "@libs/environment";
 
 const PROJECT_ID = process.env.PROJECT_ID!;
-
-const programId = new PublicKey("6qMvvisbUX3Co1sZa7DkyCXF8FcsTjzKSQHcaDoqSLbw");
 
 const getHeliusAuthSecret = async () => {
   const client = new SecretManagerServiceClient();
@@ -27,17 +30,71 @@ const getHeliusAuthSecret = async () => {
   return secretString;
 };
 
-const url =
-  PROJECT_ID === "solsubs-prod"
-    ? "https://rpc.helius.xyz/?api-key=97602bb0-7a52-4f03-ae6a-3527f32b0f09"
-    : "https://devnet.helius-rpc.com/?api-key=0c7e899d-480b-4f6f-9d6d-6e980dad3442";
+const handleCreatePlan = async (
+  tx: EnrichedTransaction,
+  program: Program<SubscriptionProgram>
+) => {
+  const accounts = tx.accountData.filter((d) => d.nativeBalanceChange > 0);
+  const account = accounts.sort(
+    (a, b) => b.nativeBalanceChange - a.nativeBalanceChange
+  )[0].account;
+  const plan = await program.account.plan.fetchNullable(account);
+  const planCol = await getPlanCol();
+  await planCol.insertOne({
+    createdAt: new Date(),
+    code: plan!.code,
+    owner: plan!.owner.toString(),
+    price: plan!.price.toNumber(),
+    splToken: plan!.tokenMint.toString(),
+    term: Object.keys(plan!.term)[0] as Term,
+    account,
+  });
+};
 
-const connection = new Connection(url, "confirmed");
-const provider = new AnchorProvider(
-  connection,
-  new Wallet(Keypair.generate()),
-  {}
-);
+const handleCreateSubscription = async (
+  tx: EnrichedTransaction,
+  program: Program<SubscriptionProgram>
+) => {
+  await log("Handle create subscription", { tx });
+  const accounts = tx.accountData.filter((d) => d.nativeBalanceChange > 0);
+  const account = accounts.sort(
+    (a, b) => b.nativeBalanceChange - a.nativeBalanceChange
+  )[0].account;
+  await log("accounts", { accounts });
+  const subscription = await program.account.subscription.fetchNullable(
+    account
+  );
+  await log("subscription", { subscription });
+  const subscriptionCol = await getSubscriptionCol();
+  const transferCol = await getTransferCol();
+  const planCol = await getPlanCol();
+  const plan = await planCol.findOne({
+    account: subscription!.planAccount.toString(),
+  });
+  const ret = await subscriptionCol.insertOne({
+    createdAt: new Date(),
+    owner: subscription!.owner.toString(),
+    planId: plan!._id.toString(),
+    state: Object.keys(subscription!.state)[0] as any,
+    nextTermDate: new Date(subscription!.nextTermDate.toNumber()),
+  });
+  await transferCol.insertOne({
+    createdAt: new Date(),
+    from: subscription!.owner.toString(),
+    to: plan!.owner.toString(),
+    hash: tx.signature,
+    planId: plan!._id.toString(),
+    splToken: plan!.splToken,
+    subscriptionId: ret.insertedId.toString(),
+    amount: plan!.price,
+    type: "payment",
+  });
+};
+
+const handleCancelSubscription = async (
+  tx: EnrichedTransaction,
+  program: Program<SubscriptionProgram>
+) => {};
 
 const app = express();
 app.use(express.json());
@@ -51,12 +108,7 @@ app.post("/helius", async (req, res) => {
   const tx = body["0"];
   await log("webhook", tx);
   try {
-    const idl = await Program.fetchIdl(programId, provider);
-    const program = new Program(
-      idl!,
-      programId,
-      provider
-    ) as unknown as Program<SubscriptionProgram>;
+    const program = await getProgram();
     const instruction = tx.instructions.find(
       (i) => i.programId === programId.toString()
     );
@@ -78,29 +130,10 @@ app.post("/helius", async (req, res) => {
     const instructionName = instructionData?.name!;
     switch (instructionName) {
       case "createPlan":
-        const accounts = tx.accountData.filter(
-          (d) => d.nativeBalanceChange > 0
-        );
-        await log("accounts", { accounts });
-        const plan = await program.account.plan.fetchNullable(
-          accounts.sort(
-            (a, b) => b.nativeBalanceChange - a.nativeBalanceChange
-          )[0].account
-        );
-        await log("plan", { plan, price: plan!.price.toNumber() });
-        const planCol = await getPlanCol();
-        await planCol.insertOne({
-          createdAt: new Date(),
-          code: plan!.code,
-          owner: plan!.owner.toString(),
-          price: plan!.price.toNumber(),
-          splToken: plan!.tokenMint.toString(),
-          term: Object.keys(plan!.term)[0] as Term,
-        });
+        await handleCreatePlan(tx, program);
         break;
       case "createSubscription":
-        // store the subscription in mongo;
-        // create a subscription charge event?;
+        await handleCreateSubscription(tx, program);
         break;
       case "cancelSubscription":
         // update subscription to be pending cancellation

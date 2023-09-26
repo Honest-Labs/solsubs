@@ -13,6 +13,7 @@ export interface Plan {
   owner: string;
   price: number;
   term: Term;
+  account: string;
   createdAt: Date;
 }
 
