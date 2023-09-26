@@ -34,3 +34,7 @@ body {
     rgba(255, 255, 255, 0) 83%
   );
 }
+
+.drawer-overlay {
+  background-color: black o !important;
+}
