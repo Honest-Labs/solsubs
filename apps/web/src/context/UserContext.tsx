@@ -1,3 +1,4 @@
+import { useWallet } from "@solana/wallet-adapter-react";
 import { User, getAuth } from "firebase/auth";
 import {
   FC,
@@ -14,6 +15,7 @@ export interface UserContextT {
 export const UserContext = createContext({} as UserContextT);
 
 export const UserContextProvider: FC<PropsWithChildren> = ({ children }) => {
+  const { disconnecting } = useWallet();
   const [user, setUser] = useState<User | null>(getAuth().currentUser);
   const [loaded, setLoaded] = useState(false);
 
@@ -26,6 +28,16 @@ export const UserContextProvider: FC<PropsWithChildren> = ({ children }) => {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (disconnecting && user) {
+      (async () => {
+        console.log("disconnecting wallet, removing user");
+        setUser(null);
+        await getAuth().signOut();
+      })();
+    }
+  }, [disconnecting]);
 
   if (!loaded) return <></>;
 

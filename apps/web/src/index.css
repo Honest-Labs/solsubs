@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  min-height: 100vh;
+}
+
+#root {
+  height: 100%;
+}
+
 .wallet-adapter-button-trigger {
   background-color: #512da8;
 }

@@ -59,11 +59,11 @@ export const App = () => {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <UserContextProvider>
-          <Wallet>
+        <Wallet>
+          <UserContextProvider>
             <RouterProvider router={router} />
-          </Wallet>
-        </UserContextProvider>
+          </UserContextProvider>
+        </Wallet>
       </QueryClientProvider>
     </trpc.Provider>
   );

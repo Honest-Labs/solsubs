@@ -13,10 +13,8 @@ const SignIn = () => {
   const { mutateAsync: verify } = trpc.verify.useMutation();
   const [signature, setSignature] = useState<Uint8Array>();
 
-  console.log(user);
-
   useEffect(() => {
-    if (signature) {
+    if (signature && wallet.publicKey) {
       (async () => {
         const token = await verify({
           signature: Array.from(signature),
@@ -30,13 +28,19 @@ const SignIn = () => {
   useEffect(() => {
     (async () => {
       if (wallet.connected && !user && !signature?.toString()) {
-        const message = await getVerificationMessage({
-          publicKey: wallet.publicKey?.toString()!,
-        });
-        const signed = await wallet.signMessage!(
-          new window.TextEncoder().encode(message)
-        );
-        setSignature(signed);
+        try {
+          const message = await getVerificationMessage({
+            publicKey: wallet.publicKey?.toString()!,
+          });
+          const signed = await wallet.signMessage!(
+            new window.TextEncoder().encode(message)
+          );
+          console.log(signed);
+          setSignature(signed);
+        } catch (e) {
+          console.log(e);
+          setSignature(undefined);
+        }
       }
     })();
   }, [wallet.connected, user, signature]);
@@ -53,8 +57,8 @@ const SignIn = () => {
   }
 
   return (
-    <div className="px-4 py-12 rounded-lg m-auto mt-12 max-w-[90%] sm:max-w-[350px] bg-base-200">
-      <h3 className="font-bold text-4xl mb-24">Sign to Continue</h3>
+    <div className="px-8 py-12 rounded-lg m-auto mt-12 max-w-[90%] sm:max-w-[350px] bg-gray-800">
+      <h3 className="font-bold text-4xl mb-36">Sign to Continue</h3>
       <WalletMultiButton />
     </div>
   );
@@ -80,7 +84,7 @@ export const DashboardPage = () => {
   return (
     <div>
       <Navbar />
-      {(!wallet.connected || !user) && !wallet.connecting && <SignIn />}
+      {(!wallet.connected || !user) && <SignIn />}
       {wallet.connected && <div></div>}
     </div>
   );
