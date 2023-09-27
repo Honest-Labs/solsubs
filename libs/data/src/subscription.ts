@@ -11,6 +11,8 @@ export interface Subscription {
   owner: string;
   state: SubscriptionState;
   createdAt: Date;
+  account: string;
+  splToken: string;
   nextTermDate: Date;
 }
 

@@ -1,12 +1,21 @@
 import { connection, getProgram } from "@libs/environment";
 import {
+  createMint,
   getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
   mintTo,
 } from "@solana/spl-token";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import {
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import base58 from "bs58";
+import { getPlanCol } from "@libs/data";
+import { ObjectId } from "mongodb";
 
 interface PlanConfig {
   term: "oneWeek" | "oneSecond" | "thirtySeconds";
@@ -17,7 +26,7 @@ const planOwner = Keypair.fromSecretKey(
     "3NrbV7oAyJJ1Lnup1c46cqHaQYZJupEnCdUzesYSev8Ujodq3D8hJSavYnC9qHmsSm92cDztqrBxJ5GxsWuMzRqd"
   )
 );
-const planId = "650c7393054f094fe8486942";
+const planId = "65146f26abad2795686b70a8";
 
 const mint = new PublicKey("Hn5zWLAdzFmP6uiJySdSqiPwYdSJgzCvsWLMVuCbkGzB");
 
@@ -72,31 +81,26 @@ interface CreateSubscriptionData {
 const createSubscription = async (data: CreateSubscriptionData) => {
   const { mint, owner, planAccount, planTokenAccount } = data;
   const program = await getProgram(planOwner);
-  const payer = anchor.web3.Keypair.generate();
-  const airdropTx = await connection.requestAirdrop(
-    payer.publicKey,
-    1000000000
-  );
-  await connection.confirmTransaction(airdropTx);
   const payerTokenAccount = await getOrCreateAssociatedTokenAccount(
     connection,
-    payer,
+    planOwner,
     mint,
-    payer.publicKey,
+    owner.publicKey,
     true
   );
+  console.log(payerTokenAccount);
   await mintTo(
     connection,
-    payer,
+    owner,
     mint,
     payerTokenAccount.address,
-    owner,
+    planOwner,
     (data.amount || 100) * 10 ** 9
   );
   const [subscriptionAccount] = anchor.web3.PublicKey.findProgramAddressSync(
     [
       Buffer.from(anchor.utils.bytes.utf8.encode("subscription")),
-      payer.publicKey.toBuffer(),
+      owner.publicKey.toBuffer(),
       planAccount.toBuffer(),
     ],
     program.programId
@@ -106,23 +110,45 @@ const createSubscription = async (data: CreateSubscriptionData) => {
       delegationAmount: new anchor.BN(100000 * 10 ** 9),
     })
     .accounts({
-      payer: payer.publicKey,
+      payer: owner.publicKey,
       payerTokenAccount: payerTokenAccount.address,
       planAccount: planAccount,
       subscriptionAccount,
       planTokenAccount: planTokenAccount,
     })
-    .signers([payer])
+    .signers([owner])
     .rpc();
 
   return {
     subscriptionAccount,
-    payer,
+    owner,
     payerTokenAccount,
   };
 };
 
 (async () => {
-  const plan = await createPlan();
-  console.log(plan);
+  const planCol = await getPlanCol();
+  const plan = (await planCol.findOne({ _id: new ObjectId(planId) }))!;
+  const owner = Keypair.generate();
+  const transferSolTx = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: planOwner.publicKey,
+      toPubkey: owner.publicKey,
+      lamports: LAMPORTS_PER_SOL / 10, //Investing .1 SOL. Remember 1 Lamport = 10^-9 SOL.
+    })
+  );
+  await connection.sendTransaction(transferSolTx, [planOwner]);
+  console.log("SOL Transferred");
+  await createSubscription({
+    amount: 100000,
+    mint: new PublicKey(plan.splToken),
+    owner,
+    planAccount: new PublicKey(plan.account),
+    planTokenAccount: getAssociatedTokenAddressSync(
+      new PublicKey(plan.splToken),
+      new PublicKey(plan.account),
+      true
+    ),
+  });
+  console.log(owner.publicKey.toString());
 })();

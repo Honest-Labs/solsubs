@@ -3,9 +3,26 @@ import { trpc } from "../../trpc";
 import { ENV, splTokens, terms } from "../../utils";
 
 export const PlansView = () => {
-  const { data, refetch } = trpc.getPlans.useQuery();
+  const { data, refetch, isLoading } = trpc.getPlans.useQuery();
 
-  console.log(data);
+  if (isLoading) {
+    return (
+      <div className="w-full flex flex-col justify-center items-center mt-24">
+        <div className="loading loading-spinner bg-primary h-48 w-48"></div>
+      </div>
+    );
+  }
+
+  if (!isLoading && data?.length === 0) {
+    return (
+      <div className="w-full flex flex-col justify-center items-center mt-24">
+        <p className="text-lg font-bold text-center mb-12">
+          You have no plans yet. Create one now!
+        </p>
+        <CreatePlanModal refetch={refetch} />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full">

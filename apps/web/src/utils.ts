@@ -27,7 +27,7 @@ export const terms = [
 export const splTokens = [
   {
     label: "USDC",
-    value: "Abgycx9WAxgyXsiSf51T4LhdRxjWahfN9wNKNEe8LiGP",
+    value: "Hn5zWLAdzFmP6uiJySdSqiPwYdSJgzCvsWLMVuCbkGzB",
     decimals: 9,
   },
 ];

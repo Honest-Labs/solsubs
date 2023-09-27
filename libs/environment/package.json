@@ -15,6 +15,7 @@
   "dependencies": {
     "@google-cloud/logging": "^11.0.0",
     "@google-cloud/secret-manager": "^5.0.1",
+    "bs58": "^5.0.0",
     "firebase-admin": "^11.10.1",
     "mongodb": "^6.1.0"
   }

@@ -1,20 +1,20 @@
 import { Logging } from "@google-cloud/logging";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import { MongoClient } from "mongodb";
-import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
-import {
-  AnchorProvider,
-  BorshCoder,
-  Program,
-  Wallet,
-} from "@project-serum/anchor";
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { AnchorProvider, Wallet, Program } from "@project-serum/anchor";
 import { SubscriptionProgram } from "./types";
 import admin, { ServiceAccount } from "firebase-admin";
+import bs58 from "bs58";
 export * from "./types";
 export const PROJECT_ID = process.env.PROJECT_ID!;
 
 export const programId = new PublicKey(
   "6qMvvisbUX3Co1sZa7DkyCXF8FcsTjzKSQHcaDoqSLbw"
+);
+
+export const PROGRAM_DEPLOYER = new PublicKey(
+  "8mw8QFoqRffuYtwVDw4QD6eEfg1wEpYB24oL44toeZxy"
 );
 
 const logging = new Logging({ projectId: PROJECT_ID });
@@ -51,7 +51,6 @@ let _mongoClient: MongoClient;
 
 const getMongoSecret = async () => {
   const client = new SecretManagerServiceClient();
-  console.log(PROJECT_ID);
   const [response] = await client.accessSecretVersion({
     name: `projects/${PROJECT_ID}/secrets/mongo-password/versions/latest`,
   });
@@ -86,7 +85,7 @@ export const connection = new Connection(url, "confirmed");
 
 let _program: Program<SubscriptionProgram>;
 
-export const getProgram = async (keypair = Keypair.generate()) => {
+export const getProgram = async (keypair: Keypair) => {
   if (!_program) {
     const provider = new AnchorProvider(connection, new Wallet(keypair), {});
     const idl = await Program.fetchIdl(programId, provider);
@@ -101,7 +100,6 @@ export const getProgram = async (keypair = Keypair.generate()) => {
 
 const getFirebaseSecret = async () => {
   const client = new SecretManagerServiceClient();
-  console.log(PROJECT_ID);
   const [response] = await client.accessSecretVersion({
     name: `projects/${PROJECT_ID}/secrets/firebase/versions/latest`,
   });
@@ -116,4 +114,13 @@ export const initFirebase = async () => {
       credential: admin.credential.cert(sa as ServiceAccount),
     });
   }
+};
+
+export const getPayerWallet = async () => {
+  const client = new SecretManagerServiceClient();
+  const [response] = await client.accessSecretVersion({
+    name: `projects/${PROJECT_ID}/secrets/payer/versions/latest`,
+  });
+  const secretString = response?.payload?.data?.toString();
+  return Keypair.fromSecretKey(bs58.decode(secretString!));
 };

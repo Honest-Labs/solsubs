@@ -142,7 +142,7 @@ export const DashboardPage = () => {
                   }}
                 >
                   {option.icon}
-                  <p className="font-bold text-2xl">{option.label}</p>
+                  <p className="text-xl text-primary">{option.label}</p>
                 </div>
               ))}
             </div>
@@ -167,11 +167,11 @@ export const DashboardPage = () => {
                 onClick={() => setActiveSidebarOption(option)}
               >
                 {option.icon}
-                <p className="font-bold text-2xl">{option.label}</p>
+                <p className="text-xl text-primary">{option.label}</p>
               </div>
             ))}
           </div>
-          <div className="drawer-content flex flex-col flex-1 p-8">
+          <div className="drawer-content flex flex-col flex-1 md:p-8 p-2">
             <div className="hidden md:flex justify-end">
               <WalletMultiButton />
             </div>
