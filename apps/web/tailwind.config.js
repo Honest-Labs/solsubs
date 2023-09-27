@@ -9,25 +9,18 @@ export default {
       {
         mytheme: {
           primary: "#f2cf1f",
-
           secondary: "#62e3ef",
-
           accent: "#fb923c",
-
           neutral: "#1b191f",
-
-          "base-100": "#000000",
-
+          "base-100": "#1F2937",
+          "base-200": "#111827",
           info: "#5985de",
-
           success: "#81e4af",
-
           warning: "#b5960d",
-
           error: "#f05161",
         },
       },
     ],
   },
   plugins: [require("daisyui"), require("@tailwindcss/typography")],
-}
+};

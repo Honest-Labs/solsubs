@@ -112,7 +112,6 @@ const getFirebaseSecret = async () => {
 export const initFirebase = async () => {
   if (!admin.apps.length) {
     const sa = await getFirebaseSecret();
-    admin.initializeApp();
     admin.initializeApp({
       credential: admin.credential.cert(sa as ServiceAccount),
     });

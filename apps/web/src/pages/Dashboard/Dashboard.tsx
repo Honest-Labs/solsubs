@@ -2,7 +2,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
 import { useContext, useEffect, useState } from "react";
-import { UserContext } from "../context/UserContext";
+import { UserContext } from "../../context/UserContext";
 import {
   MdDashboard,
   MdMenu,
@@ -10,7 +10,8 @@ import {
   MdShoppingCart,
   MdSubscriptions,
 } from "react-icons/md";
-import { trpc } from "../trpc";
+import { trpc } from "../../trpc";
+import { PlansView } from "./Plans";
 
 const SignIn = () => {
   const wallet = useWallet();
@@ -19,6 +20,7 @@ const SignIn = () => {
     trpc.getVerificationMessage.useMutation();
   const { mutateAsync: verify } = trpc.verify.useMutation();
   const [signature, setSignature] = useState<Uint8Array>();
+  const [requested, setRequested] = useState(false);
 
   useEffect(() => {
     if (signature && wallet.publicKey) {
@@ -34,8 +36,9 @@ const SignIn = () => {
 
   useEffect(() => {
     (async () => {
-      if (wallet.connected && !user && !signature?.toString()) {
+      if (wallet.connected && !user && !signature?.toString() && !requested) {
         try {
+          setRequested(true);
           const message = await getVerificationMessage({
             publicKey: wallet.publicKey?.toString()!,
           });
@@ -46,6 +49,7 @@ const SignIn = () => {
         } catch (e) {
           console.log(e);
           setSignature(undefined);
+          setRequested(false);
         }
       }
     })();
@@ -63,7 +67,7 @@ const SignIn = () => {
   }
 
   return (
-    <div className="px-8 py-12 rounded-lg m-auto mt-12 max-w-[90%] sm:max-w-[350px] bg-gray-800">
+    <div className="px-8 py-12 rounded-lg m-auto mt-12 max-w-[90%] sm:max-w-[350px] bg-gray-900">
       <h3 className="font-bold text-4xl mb-36">Sign to Continue</h3>
       <WalletMultiButton />
     </div>
@@ -103,11 +107,8 @@ export const DashboardPage = () => {
     <div className="h-full">
       {(!wallet.connected || !user) && <SignIn />}
       {wallet.connected && !!user && (
-        <div className="w-full h-full flex flex-row drawer">
+        <div className="w-full h-full flex flex-col md:flex-row drawer">
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-          <div className="absolute hidden md:flex right-[25px] top-[25px]">
-            <WalletMultiButton />
-          </div>
           <div className="md:hidden flex flex-row mt-[25px] w-full justify-evenly">
             <div className="flex flex-col gap-4">
               <div className="cursor-pointer flex gap-2 flex-row">
@@ -146,7 +147,7 @@ export const DashboardPage = () => {
               ))}
             </div>
           </div>
-          <div className="flex-1 max-w-[275px] bg-gray-800 hidden md:flex flex-col h-[100vh]  ">
+          <div className="max-w-[275px] bg-gray-900 hidden md:flex flex-col h-[100vh]  ">
             <div className="cursor-pointer flex flex-row gap-4 py-10  px-4">
               <img
                 src="/solsubs_logo.png"
@@ -170,7 +171,12 @@ export const DashboardPage = () => {
               </div>
             ))}
           </div>
-          <div className="drawer-content flex flex-col"></div>
+          <div className="drawer-content flex flex-col flex-1 p-8">
+            <div className="hidden md:flex justify-end">
+              <WalletMultiButton />
+            </div>
+            {activeSidebarOption.label === "Plans" && <PlansView />}
+          </div>
         </div>
       )}
     </div>

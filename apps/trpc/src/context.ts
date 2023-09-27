@@ -1,4 +1,4 @@
-import { log } from "@libs/environment";
+import { initFirebase, log } from "@libs/environment";
 import { inferAsyncReturnType, initTRPC, TRPCError } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { getAuth } from "firebase-admin/auth";
@@ -15,15 +15,17 @@ export const createContext = async ({
     };
   }
   try {
+    await initFirebase();
     const auth = getAuth();
     const ret = await auth.verifyIdToken(jwt);
+    await log("ret", { ret });
     return {
       userId: ret.uid,
       req,
       res,
     };
   } catch (e) {
-    await log("Error in withAuthorization");
+    await log("Error in withAuthorization", { e });
     return {
       req,
       res,

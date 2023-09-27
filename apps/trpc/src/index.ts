@@ -3,10 +3,11 @@ import { t, createContext } from "./context";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import cors from "cors";
 import { userRouter } from "./user";
+import { plansRouter } from "./plans";
 
 export type AppRouter = typeof appRouter;
 
-export const appRouter = t.mergeRouters(userRouter);
+export const appRouter = t.mergeRouters(userRouter, plansRouter);
 
 const app = express();
 app.use(cors());

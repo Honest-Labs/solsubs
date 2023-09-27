@@ -1,43 +1,17 @@
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { getProgram, useProvider } from "../program";
 import { Input } from "../components/Input";
 import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync, getMint } from "@solana/spl-token";
 import { BN, utils } from "@project-serum/anchor";
+import { splTokens, terms } from "../utils";
 
-const terms = [
-  {
-    value: "oneSecond",
-    label: "One Second",
-  },
-  {
-    value: "thirtySeconds",
-    label: "Thirty Second",
-  },
-  {
-    value: "oneWeek",
-    label: "One Week",
-  },
-  {
-    value: "thirtyDays",
-    label: "Thirty Days",
-  },
-  {
-    value: "oneYear",
-    label: "One Year",
-  },
-];
+interface Props {
+  refetch: () => Promise<any>;
+}
 
-// TODO: add prod tokens;
-const splTokens = [
-  {
-    label: "Fake",
-    value: "Abgycx9WAxgyXsiSf51T4LhdRxjWahfN9wNKNEe8LiGP",
-  },
-];
-
-export const CreatePlanModal = () => {
+export const CreatePlanModal: FC<Props> = ({ refetch }) => {
   const modal = useRef<HTMLDialogElement>();
   const { provider } = useProvider()!;
   const wallet = useWallet();
@@ -46,6 +20,7 @@ export const CreatePlanModal = () => {
   const [price, setPrice] = useState(10);
   const [term, setTerm] = useState(terms.find((t) => t.value === "oneWeek")!);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setError("");
@@ -64,16 +39,12 @@ export const CreatePlanModal = () => {
 
   return (
     <>
-      <button
-        className="btn btn-primary"
-        onClick={async () => {
-          modal.current?.showModal();
-        }}
-      >
+      <label htmlFor="my_modal" className="btn btn-primary">
         Create Plan
-      </button>
+      </label>
+      <input type="checkbox" id="my_modal" className="modal-toggle" />
       <dialog id="create_plan_modal" className="modal" ref={modal as any}>
-        <div className="modal-box max-w-[800px] w-[90%] m-auto">
+        <div className="modal-box max-w-[800px] w-[90%] m-auto bg-gray-950">
           <h1 className="font-bold text-3xl">Create Plan</h1>
           <form className="flex flex-col gap-4 mt-4">
             <div className="flex flex-row flex-wrap justify-between w-full">
@@ -90,7 +61,9 @@ export const CreatePlanModal = () => {
                   }
                 >
                   {terms.map((t) => (
-                    <option value={t.value}>{t.label}</option>
+                    <option value={t.value} key={t.label}>
+                      {t.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -126,6 +99,7 @@ export const CreatePlanModal = () => {
             {error && <p className="text-red-500 text-center">{error}</p>}
             <button
               type="button"
+              disabled={loading}
               className="btn btn-primary m-auto w-[350px] mt-8"
               onClick={async () => {
                 if (!code) {
@@ -156,32 +130,44 @@ export const CreatePlanModal = () => {
                   planAccount,
                   true
                 );
+                setLoading(true);
                 // we get the token account for the user?
-                const createPlanTx = await program.methods
-                  .createPlan({
-                    code,
-                    price: new BN(price * 10 ** mint.decimals),
-                    term: { [term.value]: {} },
-                  })
-                  .accounts({
-                    payer: wallet.publicKey!,
-                    planAccount: planAccount,
-                    mintAccount: mint.address,
-                    planTokenAccount: associatedToken,
-                  })
-                  .transaction();
-                const ret = await wallet.sendTransaction(
-                  createPlanTx,
-                  provider.connection,
-                  { skipPreflight: true }
-                );
-                console.log(ret);
+                try {
+                  const createPlanTx = await program.methods
+                    .createPlan({
+                      code,
+                      price: new BN(price * 10 ** mint.decimals),
+                      term: { [term.value]: {} },
+                    })
+                    .accounts({
+                      payer: wallet.publicKey!,
+                      planAccount: planAccount,
+                      mintAccount: mint.address,
+                      planTokenAccount: associatedToken,
+                    })
+                    .transaction();
+                  const ret = await wallet.sendTransaction(
+                    createPlanTx,
+                    provider.connection
+                  );
+                  // There is a smarter way to do this, but this should be ok for now;
+                  await new Promise((resolve) => setTimeout(resolve, 4000));
+                  await refetch();
+                  document.getElementById("my_modal")?.click();
+                  console.log(ret);
+                } catch (e) {
+                  setError("There was a problem processing your transaction");
+                }
+                setLoading(false);
               }}
             >
-              Submit
+              {loading ? "Loading..." : "Submit"}
             </button>
           </form>
         </div>
+        <label className="modal-backdrop" htmlFor="my_modal">
+          Close
+        </label>
       </dialog>
     </>
   );
