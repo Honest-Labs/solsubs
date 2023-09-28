@@ -29,5 +29,20 @@ export const splTokens = [
     label: "USDC",
     value: "Hn5zWLAdzFmP6uiJySdSqiPwYdSJgzCvsWLMVuCbkGzB",
     decimals: 9,
+    icon: "https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=026",
+  },
+  {
+    label: "DUST",
+    value: "",
+    decimals: 9,
+    icon: "https://dustprotocol.com/favicon.svg",
   },
 ];
+
+export const openLinkToExplorer = (account: string, isTx = false) => {
+  window.open(
+    `https://solana.fm/${isTx ? "tx" : "address"}/${account}${
+      !isTx ? "/anchor-account" : ""
+    }?cluster=${ENV === "prod" ? "mainnet-qn1" : "devnet-qn1"}`
+  );
+};

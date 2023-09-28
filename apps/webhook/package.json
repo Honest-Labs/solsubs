@@ -8,7 +8,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "nodemon src/index.ts",
-    "build": "npx esbuild src/index.ts --bundle --platform=node  --target=node20  --minify --sourcemap --outfile=dist/app.js",
+    "build": "npx esbuild src/index.ts --bundle --platform=node  --target=node18  --minify --sourcemap --outfile=dist/app.js",
     "docker:deploy": "gcloud run deploy webhook --image us.gcr.io/${PROJECT_ID}/webhook:0.0.1 --quiet --update-env-vars PROJECT_ID=${PROJECT_ID} --region us-east4 --memory 1Gi --concurrency 20 --allow-unauthenticated",
     "docker:build": "docker build --platform linux/amd64 -t us.gcr.io/${PROJECT_ID}/webhook:0.0.1 .",
     "docker:push": "docker push us.gcr.io/${PROJECT_ID}/webhook:0.0.1",

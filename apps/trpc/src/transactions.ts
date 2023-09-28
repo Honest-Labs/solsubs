@@ -32,4 +32,31 @@ export const transactionsRouter = t.router({
     ]);
     return { transactions, subscriptions, plans };
   }),
+  getTransactionsTotals: protectedProcedure.query(async ({ ctx, input }) => {
+    const transactionsCol = await getTransactionsCol();
+    const ret = await transactionsCol
+      .aggregate([
+        {
+          $match: {
+            $or: [{ from: ctx.userId }, { to: ctx.userId }],
+          },
+        },
+        {
+          $project: {
+            splToken: 1,
+            type: 1,
+            amount: { $divide: ["$amount", { $pow: [10, "$decimals"] }] },
+          },
+        },
+        {
+          $group: {
+            _id: { splToken: "$splToken", type: "$type" },
+            total: { $sum: "$amount" },
+          },
+        },
+      ])
+      .toArray();
+
+    return ret;
+  }),
 });

@@ -155,6 +155,9 @@ const handleCreateSubscription = async (
         subscriptionId: ret.insertedId.toString(),
         amount: plan!.price,
         type: "payment",
+        decimals: tx.accountData.find(
+          (d) => (d.tokenBalanceChanges?.length || 0) > 0
+        )?.tokenBalanceChanges![0].rawTokenAmount.decimals,
       },
     }
   );
@@ -226,6 +229,7 @@ const handleChargeSubscription = async (
         parseInt(tax!.tokenBalanceChanges![0].rawTokenAmount.tokenAmount!)
       ),
       type: "tax",
+      decimals: payment!.tokenBalanceChanges![0].rawTokenAmount.decimals,
     },
     {
       createdAt: new Date(),
@@ -240,6 +244,7 @@ const handleChargeSubscription = async (
         parseInt(payout!.tokenBalanceChanges![0].rawTokenAmount.tokenAmount!)
       ),
       type: "payout",
+      decimals: payment!.tokenBalanceChanges![0].rawTokenAmount.decimals,
     },
     {
       createdAt: new Date(),
@@ -254,6 +259,7 @@ const handleChargeSubscription = async (
         parseInt(payment!.tokenBalanceChanges![0].rawTokenAmount.tokenAmount!)
       ),
       type: "payment",
+      decimals: payment!.tokenBalanceChanges![0].rawTokenAmount.decimals,
     },
   ]);
   await sendChargeSubscriptionTask(

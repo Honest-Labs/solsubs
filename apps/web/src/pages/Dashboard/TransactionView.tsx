@@ -1,19 +1,12 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { trpc } from "../../trpc";
-import { ENV, splTokens } from "../../utils";
+import { ENV, openLinkToExplorer, splTokens } from "../../utils";
 import { FC } from "react";
 
 export const TransactionView = () => {
+  const { data: transactionTotals } = trpc.getTransactionsTotals.useQuery();
   const { data, isLoading } = trpc.getTransactions.useQuery();
   const { publicKey } = useWallet();
-
-  const openLinkTo = (account: string, isTx = false) => {
-    window.open(
-      `https://solana.fm/${isTx ? "tx" : "address"}/${account}${
-        !isTx ? "/anchor-account" : ""
-      }?cluster=${ENV === "prod" ? "mainnet-qn1" : "devnet-qn1"}`
-    );
-  };
 
   if (isLoading || !data) {
     return (
@@ -23,12 +16,49 @@ export const TransactionView = () => {
     );
   }
 
-  console.log(data);
+  console.log(transactionTotals);
 
   const { plans, subscriptions, transactions } = data!;
+  const payouts = transactionTotals?.filter(
+    (t: any) => t?._id?.type === "payout"
+  ) as any;
+
+  const payments = transactionTotals?.find(
+    (t: any) => t?._id?.type === "payment"
+  ) as any;
 
   return (
     <div className="w-full h-full">
+      <div className="flex flex-row gap-4">
+        <div className="rounded-lg bg-base-200 p-8">
+          <h2 className="text-2xl font-bold mb-6">Total Payouts</h2>
+          {!payouts?.length && <p>You currently have no payouts</p>}
+          {payouts.map((payout: any) => {
+            const splToken = splTokens.find(
+              (t) => t.value === payout._id.splToken
+            );
+            return (
+              <div className="text-xl text-primary">
+                {payout?.total} {splToken?.label}
+              </div>
+            );
+          })}
+        </div>
+        <div className="rounded-lg bg-base-200 p-8">
+          <h2 className="text-2xl font-bold mb-6">Total Payments</h2>
+          {!payments?.length && <p>You currently have no payments</p>}
+          {payments?.map((payment: any) => {
+            const splToken = splTokens.find(
+              (t) => t.value === payment._id.splToken
+            );
+            return (
+              <div className="text-xl text-primary">
+                {payment?.total} {splToken?.label}
+              </div>
+            );
+          })}
+        </div>
+      </div>
       <div className="overflow-x-auto mt-12">
         <table className="table table-sm lg:table-lg bg-base-300">
           <thead>
@@ -80,12 +110,12 @@ export const TransactionView = () => {
                     <div
                       className="flex flex-row gap-2 cursor-pointer"
                       onClick={() => {
-                        openLinkTo(transaction.hash, true);
+                        openLinkToExplorer(transaction.hash, true);
                       }}
                     >
                       <Account account={transaction.hash} />
                       <img
-                        className="w-6 h-6 cursor-pointer"
+                        className="w-6 h-6 cursor-pointer self-center"
                         src="https://solana.fm/favicon.ico"
                       />
                     </div>
@@ -94,12 +124,12 @@ export const TransactionView = () => {
                     <div
                       className="flex flex-row gap-2 cursor-pointer"
                       onClick={() => {
-                        openLinkTo(transaction.to);
+                        openLinkToExplorer(transaction.to);
                       }}
                     >
                       <Account account={transaction.to} />
                       <img
-                        className="w-6 h-6 cursor-pointer"
+                        className="w-6 h-6 cursor-pointer self-center"
                         src="https://solana.fm/favicon.ico"
                       />
                     </div>
@@ -108,12 +138,12 @@ export const TransactionView = () => {
                     <div
                       className="flex flex-row gap-2 cursor-pointer"
                       onClick={() => {
-                        openLinkTo(transaction.from);
+                        openLinkToExplorer(transaction.from);
                       }}
                     >
                       <Account account={transaction.from} />
                       <img
-                        className="w-6 h-6 cursor-pointer"
+                        className="w-6 h-6 cursor-pointer self-center"
                         src="https://solana.fm/favicon.ico"
                       />
                     </div>
@@ -122,13 +152,13 @@ export const TransactionView = () => {
                     <div
                       className="flex flex-row gap-2 cursor-pointer"
                       onClick={() => {
-                        openLinkTo(transaction.splToken);
+                        openLinkToExplorer(transaction.splToken);
                       }}
                     >
                       {transaction.amount / 10 ** (splToken?.decimals || 0)}
                       <p>{splToken?.label}</p>
                       <img
-                        className="w-6 h-6"
+                        className="w-6 h-6 self-center"
                         src="https://solana.fm/favicon.ico"
                       />
                     </div>
@@ -140,12 +170,12 @@ export const TransactionView = () => {
                     <div
                       className="flex flex-row gap-2 cursor-pointer"
                       onClick={() => {
-                        openLinkTo(plan.account);
+                        openLinkToExplorer(plan.account);
                       }}
                     >
                       <p>{plan?.code}</p>
                       <img
-                        className="w-6 h-6"
+                        className="w-6 h-6 self-center"
                         src="https://solana.fm/favicon.ico"
                       />
                     </div>
@@ -154,12 +184,12 @@ export const TransactionView = () => {
                     <div
                       className="flex flex-row gap-2 cursor-pointer"
                       onClick={() => {
-                        openLinkTo(subscription.account);
+                        openLinkToExplorer(subscription.account);
                       }}
                     >
                       <Account account={subscription.account} />
                       <img
-                        className="w-6 h-6"
+                        className="w-6 h-6 self-center"
                         src="https://solana.fm/favicon.ico"
                       />
                     </div>

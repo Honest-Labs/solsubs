@@ -4,6 +4,7 @@ import { getAuth, signInWithCustomToken } from "firebase/auth";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../context/UserContext";
 import {
+  MdAnalytics,
   MdConstruction,
   MdDashboard,
   MdGroups,
@@ -20,6 +21,7 @@ import { trpc } from "../../trpc";
 import { PlansView } from "./Plans";
 import { SubscriptionView } from "./Subscriptions";
 import { TransactionView } from "./TransactionView";
+import { AnalyticsView } from "./Analytics";
 
 const SignIn = () => {
   const wallet = useWallet();
@@ -87,8 +89,8 @@ export const DashboardPage = () => {
   const { user } = useContext(UserContext);
   const sidebarOptions = [
     {
-      label: "Dashboard",
-      icon: <MdSpaceDashboard className="h-8 w-8 text-primary" />,
+      label: "Analytics",
+      icon: <MdAnalytics className="h-8 w-8 text-primary" />,
     },
     {
       label: "Plans",
@@ -133,7 +135,7 @@ export const DashboardPage = () => {
             </div>
             <WalletMultiButton />
           </div>
-          <div className="drawer-side">
+          <div className="drawer-side z-[6]">
             <label htmlFor="my-drawer" className="drawer-overlay"></label>
             <div className="flex flex-col gap-4 bg-slate-800 h-full">
               {sidebarOptions.map((option) => (
@@ -155,12 +157,12 @@ export const DashboardPage = () => {
               ))}
             </div>
           </div>
-          <div className="max-w-[275px] bg-gray-900 hidden md:flex flex-col h-[100vh]  ">
+          <div className="max-w-[275px] bg-gray-900 hidden md:flex flex-col h-[100%] min-h-[100vh]">
             <div className="cursor-pointer flex flex-row gap-4 py-10  px-4">
               <img
                 src="/solsubs_logo.png"
                 alt="SolSubs logo"
-                className="w-12 h-12 z-[2]"
+                className="w-12 h-12"
               />
               <p className="bold normal-case text-2xl">SolSubs</p>
             </div>
@@ -179,10 +181,11 @@ export const DashboardPage = () => {
               </div>
             ))}
           </div>
-          <div className="drawer-content flex flex-col flex-1 md:p-8 p-2">
+          <div className="drawer-content flex flex-col flex-1 md:p-8 p-2 z-[5]">
             <div className="hidden md:flex justify-end">
               <WalletMultiButton />
             </div>
+            {activeSidebarOption.label === "Analytics" && <AnalyticsView />}
             {activeSidebarOption.label === "Plans" && <PlansView />}
             {activeSidebarOption.label === "Subscriptions" && (
               <SubscriptionView />

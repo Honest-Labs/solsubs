@@ -13,6 +13,7 @@ export interface Transaction {
   planId: string;
   subscriptionId: string;
   createdAt: Date;
+  decimals: number;
   hash: string;
 }
 

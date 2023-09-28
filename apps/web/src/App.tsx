@@ -1,7 +1,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { HomePage } from "./pages/Home";
 import { Wallet } from "./components/WalletProvider";
-import { DashboardPage } from "./pages/Dashboard/Dashboard";
+import { DashboardPage } from "./pages/Dashboard";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { trpc } from "./trpc";
@@ -10,6 +10,33 @@ import { configMap } from "./firebase-config";
 import { initializeAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { UserContext, UserContextProvider } from "./context/UserContext";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Colors,
+  Tooltip,
+  BarElement,
+  BarController,
+  Title,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  LineElement,
+  Filler,
+  Colors,
+  BarElement,
+  BarController,
+  Title
+);
+
 const env = import.meta.env.VITE_REST_ENVIRONMENT!;
 
 if (!getApps().length) {
@@ -61,7 +88,9 @@ export const App = () => {
       <QueryClientProvider client={queryClient}>
         <Wallet>
           <UserContextProvider>
-            <RouterProvider router={router} />
+            <div className="text-white">
+              <RouterProvider router={router} />
+            </div>
           </UserContextProvider>
         </Wallet>
       </QueryClientProvider>

@@ -14,7 +14,7 @@ import {
 } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import base58 from "bs58";
-import { getPlanCol, getSubscriptionCol } from "@libs/data";
+import { getPlanCol, getSubscriptionCol, getTransactionsCol } from "@libs/data";
 import { ObjectId } from "mongodb";
 import { sendChargeSubscriptionTask } from ".";
 
@@ -128,14 +128,16 @@ const createSubscription = async (data: CreateSubscriptionData) => {
 };
 
 (async () => {
-  const date = new Date();
-  date.setSeconds(date.getSeconds() + 5);
-  await sendChargeSubscriptionTask(
-    "6514702fabad2795686b70a9",
-    date,
-    "test1234"
-  );
-  console.log("sent");
+  const transactionsCol = await getTransactionsCol();
+  await transactionsCol.updateMany({}, { $set: { decimals: 9 } });
+  // const date = new Date();
+  // date.setSeconds(date.getSeconds() + 5);
+  // await sendChargeSubscriptionTask(
+  //   "6514702fabad2795686b70a9",
+  //   date,
+  //   "test1234"
+  // );
+  // console.log("sent");
   // const subscriptionCol = await getSubscriptionCol();
   // const all = await subscriptionCol.find({}).toArray();
   // const ret: any = await connection.getParsedAccountInfo(
@@ -166,4 +168,5 @@ const createSubscription = async (data: CreateSubscriptionData) => {
   //   ),
   // });
   // console.log(owner.publicKey.toString());
+  console.log("done");
 })();
