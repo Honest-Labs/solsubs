@@ -20,7 +20,7 @@ import {
   Term,
   getPlanCol,
   getSubscriptionCol,
-  getTransferCol,
+  getTransactionsCol,
 } from "@libs/data";
 import { SubscriptionProgram, programId } from "@libs/environment";
 import { CloudTasksClient } from "@google-cloud/tasks";
@@ -45,7 +45,8 @@ const getHeliusAuthSecret = async () => {
 
 export const sendChargeSubscriptionTask = async (
   subscriptionId: string,
-  scheduleTime: Date
+  scheduleTime: Date,
+  hash: string
 ) => {
   const client = new CloudTasksClient();
   const url =
@@ -57,19 +58,30 @@ export const sendChargeSubscriptionTask = async (
     "us-east4",
     "charge-subscriptions"
   );
-  await client.createTask({
-    parent,
-    task: {
-      httpRequest: {
-        httpMethod: "POST",
-        url: `${url}/charge-attempt/${subscriptionId}`,
-        oidcToken: {
-          serviceAccountEmail: `${PROJECT_ID}@appspot.gserviceaccount.com`,
+  try {
+    await client.createTask({
+      parent,
+      task: {
+        name: client.taskPath(
+          PROJECT_ID,
+          "us-east4",
+          "charge-subscriptions",
+          hash
+        ),
+        httpRequest: {
+          httpMethod: "POST",
+          url: `${url}/charge-attempt/${subscriptionId}`,
+          oidcToken: {
+            serviceAccountEmail: `${PROJECT_ID}@appspot.gserviceaccount.com`,
+          },
         },
+        scheduleTime: Timestamp.fromDate(scheduleTime),
       },
-      scheduleTime: Timestamp.fromDate(scheduleTime),
-    },
-  });
+    });
+  } catch (e) {
+    console.log(e);
+    await log("Failed to send charge subscription task", { subscriptionId, e });
+  }
 };
 
 const handleCreatePlan = async (
@@ -95,7 +107,8 @@ const handleCreatePlan = async (
 
 const handleCreateSubscription = async (
   tx: EnrichedTransaction,
-  program: Program<SubscriptionProgram>
+  program: Program<SubscriptionProgram>,
+  delegationAmount: number
 ) => {
   await log("Handle create subscription", { tx });
   const accounts = tx.accountData.filter((d) => d.nativeBalanceChange > 0);
@@ -108,7 +121,7 @@ const handleCreateSubscription = async (
   );
   await log("subscription", { subscription });
   const subscriptionCol = await getSubscriptionCol();
-  const transferCol = await getTransferCol();
+  const transactionCol = await getTransactionsCol();
   const planCol = await getPlanCol();
   const plan = await planCol.findOne({
     account: subscription!.planAccount.toString(),
@@ -123,16 +136,19 @@ const handleCreateSubscription = async (
     nextTermDate: new Date(nextTermDateMilliseconds),
     account,
     splToken: plan!.splToken,
+    planOwner: plan!.owner.toString(),
+    delegationAmount,
   });
-  await transferCol.updateOne(
+  await transactionCol.updateOne(
     {
       hash: tx.signature,
+      type: "payment",
     },
     {
       $set: {
         createdAt: new Date(),
         from: subscription!.owner.toString(),
-        to: plan!.owner.toString(),
+        to: plan!.account.toString(),
         hash: tx.signature,
         planId: plan!._id.toString(),
         splToken: plan!.splToken,
@@ -144,7 +160,8 @@ const handleCreateSubscription = async (
   );
   await sendChargeSubscriptionTask(
     ret.insertedId.toString(),
-    new Date(nextTermDateMilliseconds + 1000)
+    new Date(nextTermDateMilliseconds + 1000),
+    tx.signature
   );
 };
 
@@ -152,9 +169,10 @@ const handleChargeSubscription = async (
   tx: EnrichedTransaction,
   program: Program<SubscriptionProgram>
 ) => {
+  await log("tx", { tx });
   const subscriptionCol = await getSubscriptionCol();
   const planCol = await getPlanCol();
-  const transferCol = await getTransferCol();
+  const transactionsCol = await getTransactionsCol();
   const subscription = await subscriptionCol.findOne({
     account: {
       $in: tx.accountData.map((d) => d.account),
@@ -180,20 +198,68 @@ const handleChargeSubscription = async (
       },
     }
   );
-  await transferCol.insertOne({
-    createdAt: new Date(),
-    from: subscription!.owner.toString(),
-    to: plan!.owner.toString(),
-    hash: tx.signature,
-    planId: plan!._id.toString(),
-    splToken: plan!.splToken,
-    subscriptionId: subscription._id.toString(),
-    amount: plan!.price,
-    type: "payment",
-  });
+  const balancesChanges = tx.accountData.filter(
+    (a) => (a.tokenBalanceChanges?.length || 0) > 0
+  );
+  const tax = balancesChanges.find(
+    (change) =>
+      change.tokenBalanceChanges![0].userAccount === PROGRAM_DEPLOYER.toString()
+  );
+  const payment = balancesChanges.find(
+    (change) => change.tokenBalanceChanges![0].userAccount === plan!.owner
+  );
+  const payout = balancesChanges.find(
+    (change) =>
+      change.tokenBalanceChanges![0].userAccount === subscription!.owner
+  );
+  await transactionsCol.insertMany([
+    {
+      createdAt: new Date(),
+      // escrow;
+      from: plan!.account,
+      to: PROGRAM_DEPLOYER.toString(),
+      hash: tx.signature,
+      planId: plan!._id.toString(),
+      splToken: plan!.splToken,
+      subscriptionId: subscription._id.toString(),
+      amount: Math.abs(
+        parseInt(tax!.tokenBalanceChanges![0].rawTokenAmount.tokenAmount!)
+      ),
+      type: "tax",
+    },
+    {
+      createdAt: new Date(),
+      // escrow;
+      from: plan!.account,
+      to: plan!.owner,
+      hash: tx.signature,
+      planId: plan!._id.toString(),
+      splToken: plan!.splToken,
+      subscriptionId: subscription._id.toString(),
+      amount: Math.abs(
+        parseInt(payout!.tokenBalanceChanges![0].rawTokenAmount.tokenAmount!)
+      ),
+      type: "payout",
+    },
+    {
+      createdAt: new Date(),
+      from: subscription.owner,
+      // escrow;
+      to: plan!.account,
+      hash: tx.signature,
+      planId: plan!._id.toString(),
+      splToken: plan!.splToken,
+      subscriptionId: subscription._id.toString(),
+      amount: Math.abs(
+        parseInt(payment!.tokenBalanceChanges![0].rawTokenAmount.tokenAmount!)
+      ),
+      type: "payment",
+    },
+  ]);
   await sendChargeSubscriptionTask(
     subscription._id.toString(),
-    new Date(nextTermDateMilliseconds + 1000)
+    new Date(nextTermDateMilliseconds + 1000),
+    tx.signature
   );
 };
 
@@ -217,7 +283,7 @@ app.post("/helius", async (req, res) => {
     const instruction = tx.instructions.find(
       (i) => i.programId === programId.toString()
     );
-    await log("Instruction", { instruction });
+
     if (!instruction) {
       await log("Invalid instruction", { instruction });
       return res.status(200).send({});
@@ -227,13 +293,18 @@ app.post("/helius", async (req, res) => {
       instruction!.data,
       "base58"
     );
+    await log("Instruction", { instructionData });
     const instructionName = instructionData?.name!;
     switch (instructionName) {
       case "createPlan":
         await handleCreatePlan(tx, program);
         break;
       case "createSubscription":
-        await handleCreateSubscription(tx, program);
+        await handleCreateSubscription(
+          tx,
+          program,
+          (instructionData?.data as any)?.delegationAmount || 0
+        );
         break;
       case "cancelSubscription":
         // update subscription to be pending cancellation

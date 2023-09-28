@@ -4,7 +4,7 @@ import { getMongoClient } from "../../environment/src";
 // transfers can be to escrow from the player for a refund,
 // from escrow to the plan owner for a payout;
 // from escrow to deployer for tax;
-export interface Transfer {
+export interface Transaction {
   type: "tax" | "payment" | "refund" | "payout";
   from: string;
   to: string;
@@ -16,9 +16,9 @@ export interface Transfer {
   hash: string;
 }
 
-export const getTransferCol = async () => {
+export const getTransactionsCol = async () => {
   const client = await getMongoClient();
-  const col = client.collection<Transfer>("transfers");
+  const col = client.collection<Transaction>("transactions");
   await col.createIndex({
     from: 1,
     to: 1,
@@ -26,7 +26,7 @@ export const getTransferCol = async () => {
     planId: 1,
     subscriptionId: 1,
     hash: 1,
-    createdAt: -1,
+    createdAt: 1,
   });
 
   return col;

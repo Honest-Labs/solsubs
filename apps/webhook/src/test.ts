@@ -14,8 +14,9 @@ import {
 } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import base58 from "bs58";
-import { getPlanCol } from "@libs/data";
+import { getPlanCol, getSubscriptionCol } from "@libs/data";
 import { ObjectId } from "mongodb";
+import { sendChargeSubscriptionTask } from ".";
 
 interface PlanConfig {
   term: "oneWeek" | "oneSecond" | "thirtySeconds";
@@ -127,28 +128,42 @@ const createSubscription = async (data: CreateSubscriptionData) => {
 };
 
 (async () => {
-  const planCol = await getPlanCol();
-  const plan = (await planCol.findOne({ _id: new ObjectId(planId) }))!;
-  const owner = Keypair.generate();
-  const transferSolTx = new Transaction().add(
-    SystemProgram.transfer({
-      fromPubkey: planOwner.publicKey,
-      toPubkey: owner.publicKey,
-      lamports: LAMPORTS_PER_SOL / 10, //Investing .1 SOL. Remember 1 Lamport = 10^-9 SOL.
-    })
+  const date = new Date();
+  date.setSeconds(date.getSeconds() + 5);
+  await sendChargeSubscriptionTask(
+    "6514702fabad2795686b70a9",
+    date,
+    "test1234"
   );
-  await connection.sendTransaction(transferSolTx, [planOwner]);
-  console.log("SOL Transferred");
-  await createSubscription({
-    amount: 100000,
-    mint: new PublicKey(plan.splToken),
-    owner,
-    planAccount: new PublicKey(plan.account),
-    planTokenAccount: getAssociatedTokenAddressSync(
-      new PublicKey(plan.splToken),
-      new PublicKey(plan.account),
-      true
-    ),
-  });
-  console.log(owner.publicKey.toString());
+  console.log("sent");
+  // const subscriptionCol = await getSubscriptionCol();
+  // const all = await subscriptionCol.find({}).toArray();
+  // const ret: any = await connection.getParsedAccountInfo(
+  //   new PublicKey("42YsLrk9d6AHKEUW4axznEKMcEp8FKYkoHFAiCXHvPm6")
+  // );
+  // console.log(ret.value?.data?.parsed);
+  // const planCol = await getPlanCol();
+  // const plan = (await planCol.findOne({ _id: new ObjectId(planId) }))!;
+  // const owner = Keypair.generate();
+  // const transferSolTx = new Transaction().add(
+  //   SystemProgram.transfer({
+  //     fromPubkey: planOwner.publicKey,
+  //     toPubkey: owner.publicKey,
+  //     lamports: LAMPORTS_PER_SOL / 10, //Investing .1 SOL. Remember 1 Lamport = 10^-9 SOL.
+  //   })
+  // );
+  // await connection.sendTransaction(transferSolTx, [planOwner]);
+  // console.log("SOL Transferred");
+  // await createSubscription({
+  //   amount: 100000,
+  //   mint: new PublicKey(plan.splToken),
+  //   owner,
+  //   planAccount: new PublicKey(plan.account),
+  //   planTokenAccount: getAssociatedTokenAddressSync(
+  //     new PublicKey(plan.splToken),
+  //     new PublicKey(plan.account),
+  //     true
+  //   ),
+  // });
+  // console.log(owner.publicKey.toString());
 })();

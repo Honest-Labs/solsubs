@@ -7,7 +7,7 @@ export const terms = [
   },
   {
     value: "thirtySeconds",
-    label: "Thirty Second",
+    label: "Thirty Seconds",
   },
   {
     value: "oneWeek",

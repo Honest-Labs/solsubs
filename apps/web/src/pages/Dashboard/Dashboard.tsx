@@ -4,14 +4,22 @@ import { getAuth, signInWithCustomToken } from "firebase/auth";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../context/UserContext";
 import {
+  MdConstruction,
   MdDashboard,
+  MdGroups,
   MdMenu,
+  MdOutlineSubscriptions,
+  MdPayment,
   MdPerson,
+  MdScale,
   MdShoppingCart,
+  MdSpaceDashboard,
   MdSubscriptions,
 } from "react-icons/md";
 import { trpc } from "../../trpc";
 import { PlansView } from "./Plans";
+import { SubscriptionView } from "./Subscriptions";
+import { TransactionView } from "./TransactionView";
 
 const SignIn = () => {
   const wallet = useWallet();
@@ -80,19 +88,19 @@ export const DashboardPage = () => {
   const sidebarOptions = [
     {
       label: "Dashboard",
-      icon: <MdDashboard className="h-8 w-8 text-primary" />,
+      icon: <MdSpaceDashboard className="h-8 w-8 text-primary" />,
     },
     {
       label: "Plans",
-      icon: <MdShoppingCart className="h-8 w-8 text-primary" />,
+      icon: <MdConstruction className="h-8 w-8 text-primary" />,
     },
     {
       label: "Subscriptions",
-      icon: <MdSubscriptions className="h-8 w-8 text-primary" />,
+      icon: <MdGroups className="h-8 w-8 text-primary" />,
     },
     {
-      label: "Subscribers",
-      icon: <MdPerson className="h-8 w-8 text-primary" />,
+      label: "Transactions",
+      icon: <MdPayment className="h-8 w-8 text-primary" />,
     },
   ];
   const [activeSidebarOption, setActiveSidebarOption] = useState(
@@ -176,6 +184,12 @@ export const DashboardPage = () => {
               <WalletMultiButton />
             </div>
             {activeSidebarOption.label === "Plans" && <PlansView />}
+            {activeSidebarOption.label === "Subscriptions" && (
+              <SubscriptionView />
+            )}
+            {activeSidebarOption.label === "Transactions" && (
+              <TransactionView />
+            )}
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
 export PROJECT_ID=solsubs-dev
 gcloud config set project solsubs-dev
 
-apps="webhook"
+apps="webhook trpc"
 for app in $apps
 do 
 cd apps/$app
