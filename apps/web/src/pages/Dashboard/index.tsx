@@ -135,7 +135,7 @@ export const DashboardPage = () => {
             </div>
             <WalletMultiButton />
           </div>
-          <div className="drawer-side z-[6]">
+          <div className="drawer-side h-full z-[6]">
             <label htmlFor="my-drawer" className="drawer-overlay"></label>
             <div className="flex flex-col gap-4 bg-slate-800 h-full">
               {sidebarOptions.map((option) => (
@@ -152,19 +152,19 @@ export const DashboardPage = () => {
                   }}
                 >
                   {option.icon}
-                  <p className="text-xl text-primary">{option.label}</p>
+                  <p className="text-xl text-white bold">{option.label}</p>
                 </div>
               ))}
             </div>
           </div>
-          <div className="max-w-[275px] bg-gray-900 hidden md:flex flex-col h-[100%] min-h-[100vh]">
-            <div className="cursor-pointer flex flex-row gap-4 py-10  px-4">
+          <div className="max-w-[275px] bg-gray-900 hidden md:flex flex-col md:h-auto h-[100%] min-h-[100vh]">
+            <div className="cursor-pointer flex flex-col gap-4 py-4  px-4 items-center">
               <img
                 src="/solsubs_logo.png"
                 alt="SolSubs logo"
-                className="w-12 h-12"
+                className="w-32 h-32"
               />
-              <p className="bold normal-case text-2xl">SolSubs</p>
+              {/* <p className="bold normal-case text-2xl text-white">SolSubs</p> */}
             </div>
             {sidebarOptions.map((option) => (
               <div
@@ -177,12 +177,15 @@ export const DashboardPage = () => {
                 onClick={() => setActiveSidebarOption(option)}
               >
                 {option.icon}
-                <p className="text-xl text-primary">{option.label}</p>
+                <p className="text-xl text-white bold">{option.label}</p>
               </div>
             ))}
           </div>
           <div className="drawer-content flex flex-col flex-1 md:p-8 p-2 z-[5]">
-            <div className="hidden md:flex justify-end">
+            <div className="hidden md:flex justify-between">
+              <p className="text-error text-2xl font-bold">
+                Currently in Beta on Devnet
+              </p>
               <WalletMultiButton />
             </div>
             {activeSidebarOption.label === "Analytics" && <AnalyticsView />}

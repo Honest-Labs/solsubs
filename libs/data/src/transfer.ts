@@ -27,7 +27,7 @@ export const getTransactionsCol = async () => {
     planId: 1,
     subscriptionId: 1,
     hash: 1,
-    createdAt: 1,
+    createdAt: -1,
   });
 
   return col;

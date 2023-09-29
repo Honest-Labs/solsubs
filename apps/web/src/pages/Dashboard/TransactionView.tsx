@@ -33,16 +33,18 @@ export const TransactionView = () => {
         <div className="rounded-lg bg-base-200 p-8">
           <h2 className="text-2xl font-bold mb-6">Total Payouts</h2>
           {!payouts?.length && <p>You currently have no payouts</p>}
-          {payouts.map((payout: any) => {
-            const splToken = splTokens.find(
-              (t) => t.value === payout._id.splToken
-            );
-            return (
-              <div className="text-xl text-primary">
-                {payout?.total} {splToken?.label}
-              </div>
-            );
-          })}
+          <div className="flex flex-col gap-4">
+            {payouts.map((payout: any) => {
+              const splToken = splTokens.find(
+                (t) => t.value === payout._id.splToken
+              );
+              return (
+                <div className="text-xl flex flex-row justify-between gap-8 text-primary">
+                  <div>{payout?.total}</div> <div>{splToken?.label}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
         <div className="rounded-lg bg-base-200 p-8">
           <h2 className="text-2xl font-bold mb-6">Total Payments</h2>

@@ -391,7 +391,7 @@ app.post("/charge-attempt/:subscriptionId", async (req, res) => {
       .rpc();
   } catch (e) {
     await log("Error charging subscription", { e: JSON.stringify(e) });
-    throw e;
+    return res.status(500).send({});
   }
   return res.status(200).send({});
 });

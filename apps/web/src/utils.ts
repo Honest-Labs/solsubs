@@ -30,12 +30,14 @@ export const splTokens = [
     value: "Hn5zWLAdzFmP6uiJySdSqiPwYdSJgzCvsWLMVuCbkGzB",
     decimals: 9,
     icon: "https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=026",
+    color: "#2774CA",
   },
   {
     label: "DUST",
-    value: "",
+    value: "8zr1SVsbYy12jA88WxAEh5kB24538vtKEUDw5Z1FcGNr",
     decimals: 9,
     icon: "https://dustprotocol.com/favicon.svg",
+    color: "#00EDFF",
   },
 ];
 

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { trpc } from "../../trpc";
 import { ENV, splTokens, terms } from "../../utils";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
 
 export const SubscriptionView = () => {
   const [isMine, setIsMine] = useState(false);
@@ -35,10 +37,14 @@ export const SubscriptionView = () => {
             <tr>
               {!isMine && <th>Subscriber</th>}
               <th>Subscription</th>
-              <th>Price</th>
-              <th>Term</th>
               <th>Created At</th>
               <th>Next Charge Date</th>
+              <th
+                className="tooltip"
+                data-tip="Whether the subscription has a proper token delegation"
+              >
+                Delegation Status
+              </th>
               {isMine && <th>Cancel</th>}
             </tr>
           </thead>
@@ -47,7 +53,14 @@ export const SubscriptionView = () => {
               const splToken = splTokens.find(
                 (t) => t.value === subscription.splToken
               );
+              const delegationInfo = data?.delegationInfo.find(
+                (d) => d.subscriptionId === subscription._id
+              );
               const plan = plans.find((p) => p._id === subscription.planId)!;
+              const isDelegated =
+                delegationInfo?.delegate === subscription.account;
+              const sufficentDelegation =
+                (delegationInfo?.delegatedAmount || 0) > plan?.price;
               return (
                 <tr className="hover">
                   {!isMine && (
@@ -96,28 +109,6 @@ export const SubscriptionView = () => {
                     </div>
                   </td>
                   <td>
-                    <div
-                      className="flex flex-row gap-2 cursor-pointer"
-                      onClick={() => {
-                        window.open(
-                          `https://solana.fm/address/${
-                            plan.splToken
-                          }/anchor-account?cluster=${
-                            ENV === "prod" ? "mainnet-qn1" : "devnet-qn1"
-                          }`
-                        );
-                      }}
-                    >
-                      {plan.price / 10 ** (splToken?.decimals || 0)}
-                      <p>{splToken?.label}</p>
-                      <img
-                        className="w-6 h-6"
-                        src="https://solana.fm/favicon.ico"
-                      />
-                    </div>
-                  </td>
-                  <td>{terms.find((t) => t.value === plan.term)?.label}</td>
-                  <td>
                     {new Date(subscription.createdAt).toLocaleDateString()}
                   </td>
                   <td>
@@ -128,6 +119,23 @@ export const SubscriptionView = () => {
                       ).toLocaleTimeString()}
                     >
                       {new Date(subscription.nextTermDate).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td>
+                    <div
+                      className={`badge badge-lg ${
+                        !isDelegated
+                          ? "badge-error"
+                          : sufficentDelegation
+                          ? "badge-success"
+                          : "badge-warning"
+                      }`}
+                    >
+                      {!isDelegated
+                        ? "Not Delegated"
+                        : sufficentDelegation
+                        ? "Delegated"
+                        : "Insufficient Balance"}
                     </div>
                   </td>
                   {isMine && (

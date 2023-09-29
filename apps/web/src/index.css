@@ -12,16 +12,20 @@ body {
 }
 
 .wallet-adapter-button-trigger {
-  background-color: #512da8;
+  background-color: #04d9e6 !important;
+}
+
+.wallet-adapter-button-trigger:hover {
+  background-color: #62e3ef !important;
 }
 
 .radial-gradient-custom-bg {
   @apply bg-gradient-to-r;
   background-image: radial-gradient(
     circle farthest-side at 50% -96%,
-    #8b0000,
-    #ffdf00 0%,
-    #be0032 0%,
+    #5985de,
+    #04d9e6 0%,
+    #5985de 0%,
     rgba(255, 255, 255, 0)
   );
 }
@@ -29,9 +33,8 @@ body {
   @apply bg-gradient-to-r;
   background-image: radial-gradient(
     circle farthest-side at 50% 0,
-    #fcc200,
-    #ffdf00 0%,
-    #da9100 0%,
+    #5985de,
+    #04d9e6 0%,
     rgba(255, 255, 255, 0) 83%
   );
 }

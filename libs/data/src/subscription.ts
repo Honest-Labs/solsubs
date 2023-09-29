@@ -26,7 +26,7 @@ export const getSubscriptionCol = async () => {
     owner: 1,
     planOwner: 1,
     nextTermDate: -1,
-    createdAt: 1,
+    createdAt: -1,
   });
 
   return col;

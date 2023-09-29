@@ -16,7 +16,7 @@ export const getUserCol = async () => {
   const col = client.collection<User>("users");
   await col.createIndex({
     publicKey: 1,
-    createdAt: 1,
+    createdAt: -1,
   });
 
   return col;
@@ -29,7 +29,7 @@ export const getUserVerificationMessageCol = async () => {
   );
   await col.createIndex({
     publicKey: 1,
-    createdAt: 1,
+    createdAt: -1,
   });
 
   return col;

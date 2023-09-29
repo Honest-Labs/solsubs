@@ -10,7 +10,7 @@ export const transactionsRouter = t.router({
     const planCol = await getPlanCol();
     const transactions = await transactionsCol
       .find({ $or: [{ from: ctx.userId }, { to: ctx.userId }] })
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .limit(100)
       .toArray();
 

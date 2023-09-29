@@ -24,7 +24,7 @@ export const getPlanCol = async () => {
     splToken: 1,
     code: 1,
     owner: 1,
-    createdAt: 1,
+    createdAt: -1,
   });
 
   return col;

@@ -8,7 +8,7 @@ export const plansRouter = t.router({
       .find({
         owner: ctx.userId,
       })
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .limit(500)
       .toArray();
 
