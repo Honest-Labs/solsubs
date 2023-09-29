@@ -1,4 +1,3 @@
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FC } from "react";
 import "../index.css";
 import { useNavigate } from "react-router-dom";
