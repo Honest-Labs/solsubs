@@ -291,10 +291,8 @@ export type SubscriptionProgram = {
             type: "publicKey";
           },
           {
-            name: "term";
-            type: {
-              defined: "Term";
-            };
+            name: "termInSeconds";
+            type: "u64";
           },
           {
             name: "activeSubscriptions";
@@ -336,18 +334,6 @@ export type SubscriptionProgram = {
   ];
   types: [
     {
-      name: "CreateSubscriptionData";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "delegationAmount";
-            type: "u64";
-          }
-        ];
-      };
-    },
-    {
       name: "CreatePlanData";
       type: {
         kind: "struct";
@@ -361,33 +347,20 @@ export type SubscriptionProgram = {
             type: "u64";
           },
           {
-            name: "term";
-            type: {
-              defined: "Term";
-            };
+            name: "termInSeconds";
+            type: "u64";
           }
         ];
       };
     },
     {
-      name: "Term";
+      name: "CreateSubscriptionData";
       type: {
-        kind: "enum";
-        variants: [
+        kind: "struct";
+        fields: [
           {
-            name: "OneSecond";
-          },
-          {
-            name: "ThirtySeconds";
-          },
-          {
-            name: "OneWeek";
-          },
-          {
-            name: "ThirtyDays";
-          },
-          {
-            name: "OneYear";
+            name: "delegationAmount";
+            type: "u64";
           }
         ];
       };
@@ -712,10 +685,8 @@ export const IDL: SubscriptionProgram = {
             type: "publicKey",
           },
           {
-            name: "term",
-            type: {
-              defined: "Term",
-            },
+            name: "termInSeconds",
+            type: "u64",
           },
           {
             name: "activeSubscriptions",
@@ -757,18 +728,6 @@ export const IDL: SubscriptionProgram = {
   ],
   types: [
     {
-      name: "CreateSubscriptionData",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "delegationAmount",
-            type: "u64",
-          },
-        ],
-      },
-    },
-    {
       name: "CreatePlanData",
       type: {
         kind: "struct",
@@ -782,33 +741,20 @@ export const IDL: SubscriptionProgram = {
             type: "u64",
           },
           {
-            name: "term",
-            type: {
-              defined: "Term",
-            },
+            name: "termInSeconds",
+            type: "u64",
           },
         ],
       },
     },
     {
-      name: "Term",
+      name: "CreateSubscriptionData",
       type: {
-        kind: "enum",
-        variants: [
+        kind: "struct",
+        fields: [
           {
-            name: "OneSecond",
-          },
-          {
-            name: "ThirtySeconds",
-          },
-          {
-            name: "OneWeek",
-          },
-          {
-            name: "ThirtyDays",
-          },
-          {
-            name: "OneYear",
+            name: "delegationAmount",
+            type: "u64",
           },
         ],
       },

@@ -18,7 +18,7 @@ export const CreatePlanModal: FC<Props> = ({ refetch }) => {
   const [code, setCode] = useState("");
   const [splToken, setSplToken] = useState(splTokens[0]);
   const [price, setPrice] = useState(10);
-  const [term, setTerm] = useState(terms.find((t) => t.value === "oneWeek")!);
+  const [term, setTerm] = useState(terms[0]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -55,13 +55,13 @@ export const CreatePlanModal: FC<Props> = ({ refetch }) => {
                 </label>
                 <select
                   className="select select-bordered w-full max-w-xs"
-                  value={term.value}
+                  value={term.label}
                   onChange={(e) =>
-                    setTerm(terms.find((t) => t.value === e.target.value)!)
+                    setTerm(terms.find((t) => t.label === e.target.value)!)
                   }
                 >
                   {terms.map((t) => (
-                    <option value={t.value} key={t.label}>
+                    <option value={t.label} key={t.label}>
                       {t.label}
                     </option>
                   ))}
@@ -133,11 +133,12 @@ export const CreatePlanModal: FC<Props> = ({ refetch }) => {
                 setLoading(true);
                 // we get the token account for the user?
                 try {
+                  console.log(term.value);
                   const createPlanTx = await program.methods
                     .createPlan({
                       code,
                       price: new BN(price * 10 ** mint.decimals),
-                      term: { [term.value]: {} },
+                      termInSeconds: new BN(term.value),
                     })
                     .accounts({
                       payer: wallet.publicKey!,
@@ -157,6 +158,7 @@ export const CreatePlanModal: FC<Props> = ({ refetch }) => {
                   console.log(ret);
                 } catch (e) {
                   setError("There was a problem processing your transaction");
+                  console.log(e);
                 }
                 setLoading(false);
               }}

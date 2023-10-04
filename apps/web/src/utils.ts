@@ -2,23 +2,19 @@ export const ENV = import.meta.env.VITE_REST_ENVIRONMENT;
 
 export const terms = [
   {
-    value: "oneSecond",
-    label: "One Second",
+    value: 60 * 60 * 24,
+    label: "One Day",
   },
   {
-    value: "thirtySeconds",
-    label: "Thirty Seconds",
-  },
-  {
-    value: "oneWeek",
+    value: 60 * 60 * 24 * 7,
     label: "One Week",
   },
   {
-    value: "thirtyDays",
+    value: 60 * 60 * 24 * 30,
     label: "Thirty Days",
   },
   {
-    value: "oneYear",
+    value: 60 * 60 * 24 * 365,
     label: "One Year",
   },
 ];

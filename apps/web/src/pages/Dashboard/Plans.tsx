@@ -83,7 +83,9 @@ export const PlansView = () => {
                       />
                     </div>
                   </td>
-                  <td>{terms.find((t) => t.value === plan.term)?.label}</td>
+                  <td>
+                    {terms.find((t) => t.value === plan.termInSeconds)?.label}
+                  </td>
                   <td>{new Date(plan.createdAt).toLocaleDateString()}</td>
                 </tr>
               );
